@@ -1,7 +1,6 @@
 import logging
-import asyncio
-from typing import Any, Optional
 from pathlib import Path
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -19,33 +18,33 @@ class SemanticRouter:
     def _initialize_router(self):
         try:
             from synaptoroute import AdaptiveRouter, Route
-            from synaptoroute.profile import ProfileType, get_profile
             from synaptoroute.encoder import FastEmbedEncoder
+            from synaptoroute.profile import ProfileType, get_profile
             from synaptoroute.storage import SQLiteStorage
-            
+
             # Use SQLite to persist routes across restarts
             db_path = Path("src/sentiment_analysis/data/routes.db")
             db_path.parent.mkdir(parents=True, exist_ok=True)
-            
+
             # Apply Latency Profile
             profile = get_profile(ProfileType.LATENCY)
-            
+
             # Note: profile.threads must be passed explicitly to FastEmbedEncoder
             self.encoder = FastEmbedEncoder(threads=profile.threads)
             self.storage = SQLiteStorage(str(db_path))
             self.router = AdaptiveRouter(self.encoder, self.storage, profile=profile)
-            
+
             self._setup_triage_routes(Route)
             logger.info("SynaptoRoute initialized successfully.")
-            
+
         except ImportError:
             logger.warning("SynaptoRoute not installed. Semantic triage is disabled.")
 
-    def _setup_triage_routes(self, Route_cls: Any) -> None:
+    def _setup_triage_routes(self, route_cls: Any) -> None:
         """Creates predefined routes for non-emotional intent triage."""
         if self.router is None:
             return
-        
+
         # Check if the route exists to avoid duplicate work
         try:
             existing = self.router("what time is it")
@@ -54,7 +53,7 @@ class SemanticRouter:
         except Exception:
             pass
 
-        factual_route = Route_cls(
+        factual_route = route_cls(
             name="non_emotional_factual",
             utterances=[
                 "what time is it",
@@ -68,8 +67,8 @@ class SemanticRouter:
             ],
             threshold=0.85 # High threshold so we don't accidentally block sarcasm like "brilliant deduction"
         )
-        
-        greeting_route = Route_cls(
+
+        greeting_route = route_cls(
             name="non_emotional_greeting",
             utterances=[
                 "hello",
@@ -81,25 +80,25 @@ class SemanticRouter:
             ],
             threshold=0.85
         )
-        
+
         self.router.add_route(factual_route)
         self.router.add_route(greeting_route)
 
-    def triage_intent(self, text: str) -> Optional[str]:
+    def triage_intent(self, text: str) -> str | None:
         """
         Routes the text to determine if it can bypass the heavy sentiment model.
         Returns the route name if matched (e.g., 'non_emotional_factual'), else None.
         """
         if not self.router:
             return None
-            
+
         # SynaptoRoute processes the query
         result = self.router(text)
-        
+
         if result and result.name:
             logger.info(f"SynaptoRoute tripped! Intercepted query as: {result.name}")
             return result.name
-            
+
         return None
 
 # Singleton instance

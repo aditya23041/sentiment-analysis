@@ -70,7 +70,13 @@ src = ["src", "tests"]
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "N", "UP", "B", "SIM", "RUF"]
-ignore = ["B008"]  # Allow FastAPI's File()/Query() in function defaults
+ignore = ["B008", "E501"]  # Allow FastAPI's File()/Query() in function defaults; allow long lines
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["E402", "RUF015"]  # Allow non-top imports and list[0] pattern in tests
+"src/sentiment_analysis/cli/main.py" = ["E402"]  # load_dotenv() must run before imports
+"src/sentiment_analysis/models/unified_trainer.py" = ["E402"]  # datasets must import before torch
+"src/sentiment_analysis/models/unified_inference.py" = ["E402"]  # lazy imports inside __init__
 
 [tool.mypy]
 python_version = "3.10"

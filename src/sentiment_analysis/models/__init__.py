@@ -44,7 +44,7 @@ def get_model(name: str, **kwargs: object) -> SentimentModel:
         except ImportError:
             raise ValueError(
                 "Unified model requires PyTorch. Install with: pip install torch"
-            )
+            ) from None
 
     if name not in MODEL_REGISTRY:
         available = ", ".join(sorted(MODEL_REGISTRY.keys()))
