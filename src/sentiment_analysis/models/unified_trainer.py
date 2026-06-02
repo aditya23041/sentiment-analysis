@@ -12,7 +12,8 @@ import torch
 from torch import nn
 from torch.utils.data import DataLoader
 from torch.optim import AdamW
-from transformers import AutoModel, AutoTokenizer
+from torch.optim import AdamW
+from transformers import AutoModel, AutoTokenizer, AutoConfig
 
 logger = logging.getLogger(__name__)
 
@@ -23,9 +24,14 @@ EPOCHS = 3
 MODEL_NAME = "distilbert-base-uncased" # Lightweight base model
 
 class UnifiedEmotionSarcasmModel(nn.Module):
-    def __init__(self, num_emotion_labels=28):
+    def __init__(self, num_emotion_labels=28, use_config=False):
         super().__init__()
-        self.transformer = AutoModel.from_pretrained(MODEL_NAME)
+        if use_config:
+            # Initialize random weights from config (saves 260MB RAM & download time on Render)
+            config = AutoConfig.from_pretrained(MODEL_NAME)
+            self.transformer = AutoModel.from_config(config)
+        else:
+            self.transformer = AutoModel.from_pretrained(MODEL_NAME)
         
         # Sarcasm is binary (0 or 1) -> 1 output node with Sigmoid
         self.sarcasm_head = nn.Sequential(

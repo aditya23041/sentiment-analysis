@@ -61,7 +61,7 @@ class UnifiedInferenceModel(SentimentModel):
         if os.path.exists(quantized_path):
             logger.info("Loading INT8 Quantized model (CPU only)...")
             self.device = torch.device("cpu") # INT8 only supports CPU in PyTorch
-            self.model = UnifiedEmotionSarcasmModel(num_emotion_labels=len(GOEMOTIONS_LABELS))
+            self.model = UnifiedEmotionSarcasmModel(num_emotion_labels=len(GOEMOTIONS_LABELS), use_config=True)
             self.model = torch.quantization.quantize_dynamic(
                 self.model, {torch.nn.Linear}, dtype=torch.qint8
             )
@@ -69,7 +69,7 @@ class UnifiedInferenceModel(SentimentModel):
             self.model.to(self.device)
         elif os.path.exists(model_path):
             logger.info(f"Loading original 32-bit model on {self.device}...")
-            self.model = UnifiedEmotionSarcasmModel(num_emotion_labels=len(GOEMOTIONS_LABELS))
+            self.model = UnifiedEmotionSarcasmModel(num_emotion_labels=len(GOEMOTIONS_LABELS), use_config=True)
             self.model.load_state_dict(torch.load(model_path, map_location=self.device, weights_only=True))
             self.model.to(self.device)
         else:
