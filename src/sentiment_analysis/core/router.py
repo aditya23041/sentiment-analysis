@@ -1,6 +1,6 @@
 import logging
 import asyncio
-from typing import Optional
+from typing import Any, Optional
 from pathlib import Path
 
 logger = logging.getLogger(__name__)
@@ -11,9 +11,9 @@ class SemanticRouter:
     This bypasses the heavy Transformer/LLM model for non-emotional queries.
     """
     def __init__(self):
-        self.router = None
-        self.encoder = None
-        self.storage = None
+        self.router: Any = None
+        self.encoder: Any = None
+        self.storage: Any = None
         self._initialize_router()
 
     def _initialize_router(self):
@@ -41,8 +41,10 @@ class SemanticRouter:
         except ImportError:
             logger.warning("SynaptoRoute not installed. Semantic triage is disabled.")
 
-    def _setup_triage_routes(self, Route_cls):
+    def _setup_triage_routes(self, Route_cls: Any) -> None:
         """Creates predefined routes for non-emotional intent triage."""
+        if self.router is None:
+            return
         
         # Check if the route exists to avoid duplicate work
         try:

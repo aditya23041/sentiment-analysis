@@ -15,7 +15,7 @@ class ConversationalMemoryGraph:
         self.graph = nx.DiGraph()
         self._counter = 0
 
-    def add_utterance(self, session_id: str, text: str, emotion_scores: Dict[str, float] = None) -> int:
+    def add_utterance(self, session_id: str, text: str, emotion_scores: Optional[Dict[str, float]] = None) -> int:
         """
         Adds a new user utterance to their session history.
         Links it chronologically to their previous utterance.
