@@ -20,3 +20,4 @@ torch>=2.0
 synaptoroute>=0.3.0
 networkx>=3.0
 groq>=1.4.0
+datasets>=2.14
