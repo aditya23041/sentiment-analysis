@@ -1,7 +1,12 @@
-"""LLM-powered sarcasm-aware sentiment analysis backend."""
+"""LLM-powered sarcasm-aware sentiment analysis backend.
+
+Falls back to VADER automatically if the LLM API is unreachable
+(e.g. Groq blocked by Cloudflare on free-tier cloud hosts).
+"""
 
 from __future__ import annotations
 
+import logging
 import os
 from datetime import datetime, timezone
 
@@ -10,6 +15,8 @@ from openai import OpenAI
 
 from sentiment_analysis.core.schemas import SentimentLabel, SentimentResult
 from sentiment_analysis.models.base import SentimentModel
+
+logger = logging.getLogger(__name__)
 
 _USER_AGENT = (
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
@@ -38,7 +45,7 @@ _POLARITY_MAP = {
 
 
 class LLMSentimentModel(SentimentModel):
-    """Sarcasm-aware LLM backend using OpenAI-compatible APIs."""
+    """Sarcasm-aware LLM backend with automatic VADER fallback."""
 
     def __init__(
         self,
@@ -55,11 +62,16 @@ class LLMSentimentModel(SentimentModel):
         self.base_url = base_url or os.getenv("LLM_BASE_URL")
 
         # Auto-detect Groq keys
-        if self.api_key and self.api_key.startswith("gsk_") and not self.base_url:
+        if (
+            self.api_key
+            and self.api_key.startswith("gsk_")
+            and not self.base_url
+        ):
             self.base_url = "https://api.groq.com/openai/v1"
 
         self.model_name = model_name
         self.client: OpenAI | None = None
+        self._fallback: SentimentModel | None = None
 
         if self.api_key:
             http_client = httpx.Client(
@@ -83,39 +95,68 @@ class LLMSentimentModel(SentimentModel):
         """Return True if an API key was found."""
         return self.client is not None
 
+    def _get_fallback(self) -> SentimentModel:
+        """Lazy-load VADER as a fallback model."""
+        if self._fallback is None:
+            from sentiment_analysis.models.vader_model import VaderModel
+            self._fallback = VaderModel()
+        return self._fallback
+
     def analyze(self, text: str) -> SentimentResult:
-        """Analyse text sentiment using an LLM."""
+        """Analyse text using the LLM; fall back to VADER on failure."""
         if not self.is_available:
-            msg = "API Key missing. Set GROQ_API_KEY or OPENAI_API_KEY."
-            raise ValueError(msg)
+            logger.warning("LLM API key missing — falling back to VADER")
+            return self._analyze_fallback(text)
 
         try:
-            response = self.client.chat.completions.create(
-                model=self.model_name,
-                messages=[
-                    {"role": "system", "content": _SYSTEM_PROMPT},
-                    {"role": "user", "content": text},
-                ],
-                temperature=0.0,
-                max_tokens=10,
+            return self._analyze_llm(text)
+        except Exception:
+            logger.warning(
+                "LLM API unreachable — falling back to VADER",
+                exc_info=True,
             )
+            return self._analyze_fallback(text)
 
-            raw = response.choices[0].message.content.strip().upper()
+    def _analyze_llm(self, text: str) -> SentimentResult:
+        """Call the LLM API."""
+        response = self.client.chat.completions.create(
+            model=self.model_name,
+            messages=[
+                {"role": "system", "content": _SYSTEM_PROMPT},
+                {"role": "user", "content": text},
+            ],
+            temperature=0.0,
+            max_tokens=10,
+        )
 
-            try:
-                sentiment = SentimentLabel(raw)
-            except ValueError:
-                sentiment = SentimentLabel.NEUTRAL
+        raw = response.choices[0].message.content.strip().upper()
 
-            return SentimentResult(
-                text=text,
-                polarity=_POLARITY_MAP.get(sentiment, 0.0),
-                subjectivity=0.8,
-                sentiment=sentiment,
-                confidence=0.95,
-                model_used="llm_sarcasm",
-                timestamp=datetime.now(timezone.utc),
-            )
+        try:
+            sentiment = SentimentLabel(raw)
+        except ValueError:
+            sentiment = SentimentLabel.NEUTRAL
 
-        except Exception as e:
-            raise RuntimeError(f"LLM API Error: {e!s}") from e
+        return SentimentResult(
+            text=text,
+            polarity=_POLARITY_MAP.get(sentiment, 0.0),
+            subjectivity=0.8,
+            sentiment=sentiment,
+            confidence=0.95,
+            model_used="llm_sarcasm",
+            timestamp=datetime.now(timezone.utc),
+        )
+
+    def _analyze_fallback(self, text: str) -> SentimentResult:
+        """Use VADER as fallback, tagging model_used accordingly."""
+        fallback = self._get_fallback()
+        result = fallback.analyze(text)
+        # Tag it so the UI knows this was a fallback
+        return SentimentResult(
+            text=result.text,
+            polarity=result.polarity,
+            subjectivity=result.subjectivity,
+            sentiment=result.sentiment,
+            confidence=result.confidence,
+            model_used="llm_fallback_vader",
+            timestamp=datetime.now(timezone.utc),
+        )
