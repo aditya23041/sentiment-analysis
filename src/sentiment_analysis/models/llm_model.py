@@ -1,4 +1,5 @@
 import os
+import httpx
 from datetime import datetime, timezone
 from typing import Optional
 
@@ -25,9 +26,15 @@ class LLMSentimentModel(SentimentModel):
         self.client = None
         
         if self.api_key:
+            http_client = httpx.Client(
+                transport=httpx.HTTPTransport(retries=3),
+                timeout=15.0,
+            )
             self.client = OpenAI(
                 api_key=self.api_key,
-                base_url=self.base_url
+                base_url=self.base_url,
+                http_client=http_client,
+                max_retries=3,
             )
 
     @property
