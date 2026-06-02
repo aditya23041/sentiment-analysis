@@ -29,6 +29,7 @@ class LLMSentimentModel(SentimentModel):
             http_client = httpx.Client(
                 transport=httpx.HTTPTransport(retries=3),
                 timeout=15.0,
+                headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"}
             )
             self.client = OpenAI(
                 api_key=self.api_key,
