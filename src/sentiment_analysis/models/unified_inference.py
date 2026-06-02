@@ -41,11 +41,11 @@ class UnifiedInferenceModel(SentimentModel):
         quantized_path = os.path.join(weights_dir, "unified_model_quantized.pth")
         model_path = os.path.join(weights_dir, "unified_model.pth")
         
-        # 1. Check if quantized model needs to be rebuilt from chunks
-        if not os.path.exists(quantized_path):
+        # 1. Check if quantized model needs to be rebuilt from chunks (or if it's corrupted/empty)
+        if not os.path.exists(quantized_path) or os.path.getsize(quantized_path) < 1000000:
             chunk0 = f"{quantized_path}.part0"
             if os.path.exists(chunk0):
-                logger.info("Rebuilding quantized model from chunks...")
+                logger.info("Rebuilding quantized model from chunks (streaming 1MB chunks to save memory)...")
                 with open(quantized_path, "wb") as outfile:
                     chunk_num = 0
                     while True:
@@ -53,7 +53,8 @@ class UnifiedInferenceModel(SentimentModel):
                         if not os.path.exists(chunk_path):
                             break
                         with open(chunk_path, "rb") as infile:
-                            outfile.write(infile.read())
+                            import shutil
+                            shutil.copyfileobj(infile, outfile, length=1024*1024)
                         chunk_num += 1
                 logger.info("Successfully rebuilt quantized model.")
                 

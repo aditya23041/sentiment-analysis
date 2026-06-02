@@ -59,12 +59,13 @@ async function analyzeText() {
 
         if (!res.ok) {
             let errMessage = 'Analysis failed';
+            const errorText = await res.text();
             try {
-                const err = await res.json();
+                const err = JSON.parse(errorText);
                 errMessage = err.detail || errMessage;
             } catch (parseErr) {
-                // If it's not JSON, read as text
-                errMessage = await res.text();
+                // If it's not JSON (e.g. Render 502/504 HTML page)
+                errMessage = errorText;
             }
             throw new Error(errMessage);
         }
