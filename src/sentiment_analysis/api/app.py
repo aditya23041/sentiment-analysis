@@ -7,7 +7,8 @@ from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 from pathlib import Path
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.responses import HTMLResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -72,10 +73,9 @@ def create_app() -> FastAPI:
     if _TEMPLATES_DIR.exists():
         templates = Jinja2Templates(directory=str(_TEMPLATES_DIR))
 
-        @app.get("/", include_in_schema=False)
-        async def dashboard(request: object) -> object:
-
-            return templates.TemplateResponse("index.html", {"request": request})
+        @app.get("/", include_in_schema=False, response_class=HTMLResponse)
+        async def dashboard(request: Request) -> HTMLResponse:
+            return templates.TemplateResponse(request=request, name="index.html")
 
     return app
 
