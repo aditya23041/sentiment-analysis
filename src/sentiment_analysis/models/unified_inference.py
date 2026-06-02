@@ -1,14 +1,19 @@
 import os
-import torch
 import logging
 from typing import Dict, Any
 
-from transformers import AutoTokenizer
 from sentiment_analysis.models.base import SentimentModel
 from sentiment_analysis.core.schemas import SentimentResult, SentimentLabel
-from sentiment_analysis.models.unified_trainer import UnifiedEmotionSarcasmModel
-from sentiment_analysis.data.dataset_builder import GOEMOTIONS_LABELS
 from sentiment_analysis.core.memory_graph import memory_graph
+
+# GoEmotions has 28 labels. We define them consistently here to avoid importing dataset_builder and triggering PyTorch loading.
+GOEMOTIONS_LABELS = [
+    "admiration", "amusement", "anger", "annoyance", "approval", "caring",
+    "confusion", "curiosity", "desire", "disappointment", "disapproval",
+    "disgust", "embarrassment", "excitement", "fear", "gratitude", "grief",
+    "joy", "love", "nervousness", "optimism", "pride", "realization",
+    "relief", "remorse", "sadness", "surprise", "neutral"
+]
 
 logger = logging.getLogger(__name__)
 
@@ -18,6 +23,12 @@ class UnifiedInferenceModel(SentimentModel):
     Utilizes NetworkX memory graph for conversational context.
     """
     def __init__(self, weights_dir: str = "src/sentiment_analysis/data/weights"):
+        # LAZY LOAD HEAVY ML LIBRARIES TO PREVENT RENDER OOM ON STARTUP
+        global torch, AutoTokenizer, UnifiedEmotionSarcasmModel
+        import torch
+        from transformers import AutoTokenizer
+        from sentiment_analysis.models.unified_trainer import UnifiedEmotionSarcasmModel
+        
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.weights_dir = weights_dir
         
