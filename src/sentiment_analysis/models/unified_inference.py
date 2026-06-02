@@ -38,7 +38,7 @@ class UnifiedInferenceModel(SentimentModel):
         self.tokenizer = AutoTokenizer.from_pretrained(weights_dir)
         
         # Load Model
-        quantized_path = os.path.join(weights_dir, "unified_model_quantized.pth")
+        quantized_path = os.path.join(weights_dir, "unified_model_full.pth")
         model_path = os.path.join(weights_dir, "unified_model.pth")
         
         # 1. Check if quantized model needs to be rebuilt from chunks (or if it's corrupted/empty)
@@ -59,13 +59,9 @@ class UnifiedInferenceModel(SentimentModel):
                 logger.info("Successfully rebuilt quantized model.")
                 
         if os.path.exists(quantized_path):
-            logger.info("Loading INT8 Quantized model (CPU only)...")
+            logger.info("Loading FULL INT8 Quantized model directly into RAM (CPU only)...")
             self.device = torch.device("cpu") # INT8 only supports CPU in PyTorch
-            self.model = UnifiedEmotionSarcasmModel(num_emotion_labels=len(GOEMOTIONS_LABELS), use_config=True)
-            self.model = torch.quantization.quantize_dynamic(
-                self.model, {torch.nn.Linear}, dtype=torch.qint8
-            )
-            self.model.load_state_dict(torch.load(quantized_path, map_location="cpu", weights_only=True))
+            self.model = torch.load(quantized_path, map_location="cpu")
             self.model.to(self.device)
         elif os.path.exists(model_path):
             logger.info(f"Loading original 32-bit model on {self.device}...")
