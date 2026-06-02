@@ -37,13 +37,17 @@ def analyze_system(system_name, url, payload_key="text", parse_func=None):
             res.raise_for_status()
             data = res.json()
             latency = (time.perf_counter() - start_time) * 1000
+            
+            if parse_func:
+                results.append((latency, parse_func(data)))
+            else:
+                results.append((latency, str(data)))
             latencies.append(latency)
-
-            parsed_result = parse_func(data) if parse_func else str(data)
-            results.append((latency, parsed_result))
         except Exception as e:
             results.append((0, f"ERROR: {e!s}"))
             latencies.append(0)
+            
+        time.sleep(2) # Avoid hitting Groq free tier rate limits
 
     return results, latencies
 
