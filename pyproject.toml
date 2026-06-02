@@ -36,6 +36,9 @@ dependencies = [
     "rich>=13.0",
     "openai>=1.0.0",
     "python-dotenv>=1.0.0",
+    "networkx>=3.0",
+    "groq>=1.4.0",
+    "synaptoroute>=0.3.0",
 ]
 
 [project.optional-dependencies]
