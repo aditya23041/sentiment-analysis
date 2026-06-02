@@ -8,7 +8,8 @@ COPY README.md .
 COPY src/ src/
 
 RUN pip install --no-cache-dir --upgrade pip && \
-    pip install --no-cache-dir .
+    pip install --no-cache-dir torch --index-url https://download.pytorch.org/whl/cpu && \
+    pip install --no-cache-dir ".[transformers]"
 
 # Download NLTK data at build time
 RUN python -c "import nltk; nltk.download('vader_lexicon', quiet=True); nltk.download('punkt_tab', quiet=True); nltk.download('stopwords', quiet=True)"
