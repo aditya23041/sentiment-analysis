@@ -7,6 +7,7 @@ import pytest
 from sentiment_analysis.core.analyzer import SentimentAnalyzer
 from sentiment_analysis.core.schemas import CompareResponse, SentimentLabel, SentimentResult
 
+# pyrefly: ignore [missing-import]
 from .conftest import POSITIVE_TEXTS
 
 

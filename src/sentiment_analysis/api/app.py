@@ -8,15 +8,15 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 
 from dotenv import load_dotenv
-load_dotenv()
-
 from fastapi import FastAPI, Request
-from fastapi.responses import HTMLResponse
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
 from sentiment_analysis.api.routes import router
+
+load_dotenv()
 
 logger = logging.getLogger(__name__)
 

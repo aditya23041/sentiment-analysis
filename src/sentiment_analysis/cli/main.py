@@ -82,7 +82,10 @@ def analyze(text: str, model: str, json_output: bool) -> None:
 
 
 @cli.command()
-@click.option("-m", "--model", default="llm", help="Model to use (vader, textblob, transformer, llm)")
+@click.option(
+    "-m", "--model", default="llm",
+    help="Model to use (vader, textblob, transformer, llm)",
+)
 def interactive(model: str) -> None:
     """Start an interactive session to analyze texts line by line."""
     console.print(Panel(
@@ -99,13 +102,17 @@ def interactive(model: str) -> None:
                 break
             if not text.strip():
                 continue
-                
+
             result = analyzer.analyze(text)
             emoji = SENTIMENT_EMOJI.get(result.sentiment.value, "❓")
             color = SENTIMENT_COLOR.get(result.sentiment.value, "white")
-            
-            console.print(f"  Result: {emoji} [{color}]{result.sentiment.value.replace('_', ' ')}[/{color}] "
-                          f"(Polarity: {result.polarity:+.4f}, Confidence: {result.confidence:.0%})\n")
+
+            label = result.sentiment.value.replace('_', ' ')
+            console.print(
+                f"  Result: {emoji} [{color}]{label}[/{color}] "
+                f"(Polarity: {result.polarity:+.4f}, "
+                f"Confidence: {result.confidence:.0%})\n"
+            )
     except ValueError as e:
         console.print(f"[red]Error:[/red] {e}")
         sys.exit(1)
