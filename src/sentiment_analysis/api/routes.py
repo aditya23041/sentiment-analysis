@@ -64,6 +64,8 @@ async def analyze_text(request: AnalysisRequest) -> SentimentResult:
         return analyzer.analyze(request.text)
     except ValueError as ve:
         raise HTTPException(status_code=400, detail=str(ve)) from None
+    except HTTPException:
+        raise
     except Exception as e:
         logger.exception("Analysis failed")
         raise HTTPException(status_code=500, detail=f"Analysis failed: {e!s}") from None
@@ -80,6 +82,8 @@ async def analyze_batch(request: BatchAnalysisRequest) -> AnalysisResponse:
             total=len(results),
             model_used=request.model,
         )
+    except HTTPException:
+        raise
     except Exception as e:
         logger.exception("Batch analysis failed")
         raise HTTPException(status_code=500, detail=f"Batch analysis failed: {e!s}") from None
@@ -91,6 +95,8 @@ async def compare_models(request: CompareRequest) -> CompareResponse:
     try:
         analyzer = _get_analyzer("vader")  # Use any analyzer for comparison
         return analyzer.compare_models(request.text)
+    except HTTPException:
+        raise
     except Exception as e:
         logger.exception("Comparison failed")
         raise HTTPException(status_code=500, detail=f"Comparison failed: {e!s}") from None
@@ -122,6 +128,8 @@ async def analyze_csv(
         }
     except KeyError as e:
         raise HTTPException(status_code=400, detail=str(e)) from None
+    except HTTPException:
+        raise
     except Exception as e:
         logger.exception("CSV analysis failed")
         raise HTTPException(status_code=500, detail=f"CSV analysis failed: {e!s}") from None
