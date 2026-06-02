@@ -7,6 +7,9 @@ from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 from pathlib import Path
 
+from dotenv import load_dotenv
+load_dotenv()
+
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse
 from fastapi.middleware.cors import CORSMiddleware

@@ -28,7 +28,7 @@ class SentimentAnalyzer:
     and multi-model comparison.
 
     Args:
-        model: Name of the model backend to use ('textblob', 'vader', 'transformer').
+        model: Name of the model backend to use ('textblob', 'vader', 'transformer', 'llm').
             Defaults to 'vader'.
         preprocess: Whether to preprocess text before analysis. Default True.
         preprocessor_kwargs: Additional keyword arguments for TextPreprocessor.

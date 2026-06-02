@@ -1,22 +1,19 @@
 """Sentiment analysis model backends."""
 
 from sentiment_analysis.models.base import SentimentModel
+from sentiment_analysis.models.llm_model import LLMSentimentModel
 from sentiment_analysis.models.textblob_model import TextBlobModel
+from sentiment_analysis.models.transformer_model import TransformerModel
 from sentiment_analysis.models.vader_model import VaderModel
 
 # Model registry — maps string names to model classes
 MODEL_REGISTRY: dict[str, type[SentimentModel]] = {
     "textblob": TextBlobModel,
     "vader": VaderModel,
+    "transformer": TransformerModel,
+    "llm": LLMSentimentModel,
 }
 
-# Try to register the transformer model if dependencies are available
-try:
-    from sentiment_analysis.models.transformer_model import TransformerModel
-
-    MODEL_REGISTRY["transformer"] = TransformerModel
-except ImportError:
-    pass
 
 
 def get_model(name: str, **kwargs: object) -> SentimentModel:
