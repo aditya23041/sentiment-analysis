@@ -71,14 +71,14 @@ def analyze(text: str, model: str, json_output: bool) -> None:
         panel_content.append(f"  📊 Polarity:     {result.polarity:+.4f}\n")
         panel_content.append(f"  📐 Subjectivity: {result.subjectivity:.4f}\n")
         panel_content.append(f"  🎯 Confidence:   {result.confidence:.0%}\n")
-        
+
         if result.is_sarcastic:
             panel_content.append(f"  🤡 [bold magenta]Sarcasm Detected![/bold magenta] ({result.sarcasm_probability:.0%})\n")
-            
-        if "emotions" in result.metadata and result.metadata["emotions"]:
+
+        if result.metadata.get("emotions"):
             emotions_str = ", ".join([f"{k} ({v:.0%})" for k, v in result.metadata["emotions"].items()])
             panel_content.append(f"  🎭 Emotions:     {emotions_str}\n")
-            
+
         panel_content.append(f"  🤖 Model:        {result.model_used}\n")
 
         console.print(Panel(

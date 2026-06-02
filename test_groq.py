@@ -1,4 +1,3 @@
-import os
 from openai import OpenAI
 
 try:
@@ -10,4 +9,4 @@ try:
     )
     print(response)
 except Exception as e:
-    print(f"Exception: {type(e).__name__}: {str(e)}")
+    print(f"Exception: {type(e).__name__}: {e!s}")

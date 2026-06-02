@@ -1,5 +1,6 @@
 import logging
-from typing import Dict, List, Any
+from typing import Any
+
 import torch
 from torch.utils.data import Dataset
 
@@ -17,15 +18,15 @@ GOEMOTIONS_LABELS = [
 class MultiTaskDataset(Dataset):
     """
     Unified PyTorch Dataset for multi-task learning (Sarcasm + GoEmotions).
-    
+
     Each item returns:
     - input_ids
     - attention_mask
     - sarcasm_label (0 or 1, or -1 if unknown)
     - emotion_labels (multi-hot encoding of 28 classes, or all -1 if unknown)
     """
-    
-    def __init__(self, texts: List[str], sarcasm_labels: List[int], emotion_labels: List[List[int]], tokenizer: Any, max_length: int = 128):
+
+    def __init__(self, texts: list[str], sarcasm_labels: list[int], emotion_labels: list[list[int]], tokenizer: Any, max_length: int = 128):
         self.texts = texts
         self.sarcasm_labels = sarcasm_labels
         self.emotion_labels = emotion_labels
@@ -35,7 +36,7 @@ class MultiTaskDataset(Dataset):
     def __len__(self) -> int:
         return len(self.texts)
 
-    def __getitem__(self, idx: int) -> Dict[str, torch.Tensor]:
+    def __getitem__(self, idx: int) -> dict[str, torch.Tensor]:
         text = str(self.texts[idx])
         sarcasm = self.sarcasm_labels[idx]
         emotions = self.emotion_labels[idx]
@@ -57,7 +58,7 @@ class MultiTaskDataset(Dataset):
             "emotion_labels": torch.tensor(emotions, dtype=torch.float)
         }
 
-def load_unified_datasets() -> tuple[List[str], List[int], List[List[int]]]:
+def load_unified_datasets() -> tuple[list[str], list[int], list[list[int]]]:
     """
     Downloads and merges nikesh66/Sarcasm-dataset and google-research-datasets/go_emotions.
     Returns: texts, sarcasm_labels, emotion_labels
@@ -67,19 +68,19 @@ def load_unified_datasets() -> tuple[List[str], List[int], List[List[int]]]:
     except ImportError:
         logger.error("Please install the datasets library: pip install datasets")
         raise
-        
+
     logger.info("Loading nikesh66/Sarcasm-dataset...")
     # The sarcasm dataset usually has 'text' and 'is_sarcastic' columns
     sarcasm_ds = load_dataset("nikesh66/Sarcasm-dataset", split="train")
-    
+
     logger.info("Loading go_emotions...")
     # GoEmotions has 'text' and 'labels' (a list of integers matching GOEMOTIONS_LABELS)
     goemotions_ds = load_dataset("google-research-datasets/go_emotions", "simplified", split="train")
-    
+
     texts = []
     sarcasm_labels = []
     emotion_labels = []
-    
+
     # Process Sarcasm dataset (Emotion labels become -1 mask)
     logger.info("Processing Sarcasm dataset...")
     for item in sarcasm_ds:
@@ -87,19 +88,19 @@ def load_unified_datasets() -> tuple[List[str], List[int], List[List[int]]]:
         sarcasm_labels.append(1 if item['Sarcasm (yes/no)'] == 'yes' else 0)
         # -1 indicates "ignore this task during loss computation"
         emotion_labels.append([-1] * len(GOEMOTIONS_LABELS))
-        
+
     # Process GoEmotions dataset (Sarcasm label becomes -1 mask)
     logger.info("Processing GoEmotions dataset...")
     for item in goemotions_ds:
         texts.append(item['text'])
         sarcasm_labels.append(-1)
-        
+
         # Create multi-hot encoding for emotions
         multi_hot = [0] * len(GOEMOTIONS_LABELS)
         for label_idx in item['labels']:
             multi_hot[label_idx] = 1
         emotion_labels.append(multi_hot)
-        
+
     logger.info(f"Successfully fused datasets! Total unified records: {len(texts)}")
     return texts, sarcasm_labels, emotion_labels
 
