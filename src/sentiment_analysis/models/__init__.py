@@ -49,7 +49,13 @@ def get_model(name: str, **kwargs: object) -> SentimentModel:
     if name not in MODEL_REGISTRY:
         available = ", ".join(sorted(MODEL_REGISTRY.keys()))
         raise ValueError(f"Unknown model '{name}'. Available models: {available}")
-    return MODEL_REGISTRY[name](**kwargs)
+    try:
+        return MODEL_REGISTRY[name](**kwargs)
+    except ImportError as e:
+        raise ValueError(
+            f"Model '{name}' requires additional dependencies. Error: {e!s}. "
+            "Please install them via pip (e.g., pip install torch transformers)."
+        ) from None
 
 
 def list_models() -> list[str]:
