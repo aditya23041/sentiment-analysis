@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Real-time multi-model sentiment analysis dashboard. Analyze text sentiment using TextBlob, VADER, and Transformer models.">
+    <title>Sentiment Analysis Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+</head>
+<body>
+    <!-- Animated background -->
+    <div class="bg-animation">
+        <div class="bg-orb bg-orb-1"></div>
+        <div class="bg-orb bg-orb-2"></div>
+        <div class="bg-orb bg-orb-3"></div>
+    </div>
+
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header" id="app-header">
+            <div class="header-content">
+                <div class="logo-group">
+                    <div class="logo-icon">
+                        <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+                            <circle cx="16" cy="16" r="14" stroke="url(#logo-grad)" stroke-width="2.5"/>
+                            <path d="M10 20 C12 14, 20 14, 22 20" stroke="url(#logo-grad)" stroke-width="2" stroke-linecap="round" class="logo-smile"/>
+                            <circle cx="11" cy="13" r="1.5" fill="url(#logo-grad)"/>
+                            <circle cx="21" cy="13" r="1.5" fill="url(#logo-grad)"/>
+                            <defs>
+                                <linearGradient id="logo-grad" x1="0" y1="0" x2="32" y2="32">
+                                    <stop offset="0%" stop-color="#818cf8"/>
+                                    <stop offset="100%" stop-color="#c084fc"/>
+                                </linearGradient>
+                            </defs>
+                        </svg>
+                    </div>
+                    <div>
+                        <h1 class="app-title">Sentiment Analysis</h1>
+                        <p class="app-subtitle">Multi-model NLP platform</p>
+                    </div>
+                </div>
+                <div class="header-actions">
+                    <div class="model-selector">
+                        <label for="model-select">Model</label>
+                        <select id="model-select">
+                            <option value="vader" selected>VADER</option>
+                            <option value="textblob">TextBlob</option>
+                            <option value="transformer">Transformer</option>
+                        </select>
+                    </div>
+                    <div class="status-indicator" id="status-indicator">
+                        <span class="status-dot"></span>
+                        <span class="status-text">Ready</span>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Input Section -->
+            <section class="input-section" id="input-section">
+                <div class="glass-card input-card">
+                    <div class="card-header">
+                        <h2>Analyze Text</h2>
+                        <div class="char-counter">
+                            <span id="char-count">0</span> / 10,000
+                        </div>
+                    </div>
+                    <div class="textarea-wrapper">
+                        <textarea
+                            id="text-input"
+                            placeholder="Type or paste text to analyze sentiment..."
+                            maxlength="10000"
+                            rows="4"
+                        ></textarea>
+                        <div class="textarea-glow"></div>
+                    </div>
+                    <div class="input-actions">
+                        <button class="btn btn-primary" id="analyze-btn" onclick="analyzeText()">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
+                            </svg>
+                            Analyze
+                        </button>
+                        <button class="btn btn-secondary" id="compare-btn" onclick="compareModels()">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M18 20V10M12 20V4M6 20v-6"/>
+                            </svg>
+                            Compare All Models
+                        </button>
+                        <button class="btn btn-ghost" onclick="clearAll()">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M18 6L6 18M6 6l12 12"/>
+                            </svg>
+                            Clear
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Results Section -->
+            <section class="results-section" id="results-section" style="display: none;">
+                <!-- Sentiment Gauge -->
+                <div class="glass-card gauge-card">
+                    <div class="card-header">
+                        <h2>Sentiment Result</h2>
+                        <span class="badge" id="model-badge">VADER</span>
+                    </div>
+                    <div class="gauge-container">
+                        <div class="gauge-ring">
+                            <svg viewBox="0 0 200 200" class="gauge-svg">
+                                <circle cx="100" cy="100" r="85" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="12"/>
+                                <circle cx="100" cy="100" r="85" fill="none" stroke="url(#gauge-gradient)" stroke-width="12"
+                                    stroke-dasharray="534" stroke-dashoffset="534" stroke-linecap="round"
+                                    id="gauge-arc" class="gauge-arc"/>
+                                <defs>
+                                    <linearGradient id="gauge-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                                        <stop offset="0%" stop-color="#ef4444"/>
+                                        <stop offset="50%" stop-color="#eab308"/>
+                                        <stop offset="100%" stop-color="#22c55e"/>
+                                    </linearGradient>
+                                </defs>
+                            </svg>
+                            <div class="gauge-center">
+                                <div class="gauge-emoji" id="gauge-emoji">😐</div>
+                                <div class="gauge-label" id="gauge-label">NEUTRAL</div>
+                                <div class="gauge-polarity" id="gauge-polarity">0.00</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="metrics-row">
+                        <div class="metric">
+                            <span class="metric-label">Polarity</span>
+                            <span class="metric-value" id="metric-polarity">0.00</span>
+                            <div class="metric-bar">
+                                <div class="metric-bar-fill polarity-bar" id="polarity-bar"></div>
+                            </div>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-label">Subjectivity</span>
+                            <span class="metric-value" id="metric-subjectivity">0.00</span>
+                            <div class="metric-bar">
+                                <div class="metric-bar-fill subjectivity-bar" id="subjectivity-bar"></div>
+                            </div>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-label">Confidence</span>
+                            <span class="metric-value" id="metric-confidence">0%</span>
+                            <div class="metric-bar">
+                                <div class="metric-bar-fill confidence-bar" id="confidence-bar"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Comparison Section -->
+            <section class="comparison-section" id="comparison-section" style="display: none;">
+                <div class="glass-card">
+                    <div class="card-header">
+                        <h2>Model Comparison</h2>
+                        <span class="badge badge-info" id="consensus-badge">—</span>
+                    </div>
+                    <div class="comparison-grid" id="comparison-grid">
+                        <!-- Filled by JS -->
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="comparison-chart"></canvas>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Batch / CSV Section -->
+            <section class="batch-section">
+                <div class="glass-card">
+                    <div class="card-header">
+                        <h2>Batch Analysis</h2>
+                    </div>
+                    <div class="drop-zone" id="drop-zone">
+                        <div class="drop-zone-content">
+                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="drop-icon">
+                                <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/>
+                            </svg>
+                            <p class="drop-text">Drag & drop a CSV file here</p>
+                            <p class="drop-subtext">or click to browse • Column name: <input type="text" id="csv-column" value="text" class="inline-input"></p>
+                            <input type="file" id="csv-input" accept=".csv" style="display:none">
+                        </div>
+                    </div>
+                    <div id="batch-results" style="display:none;">
+                        <div class="batch-stats" id="batch-stats"></div>
+                        <div class="batch-chart-container">
+                            <canvas id="batch-chart"></canvas>
+                        </div>
+                        <div class="table-wrapper">
+                            <table class="results-table" id="batch-table">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Text</th>
+                                        <th>Sentiment</th>
+                                        <th>Polarity</th>
+                                        <th>Confidence</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="batch-table-body"></tbody>
+                            </table>
+                        </div>
+                        <div class="batch-actions">
+                            <button class="btn btn-secondary" onclick="exportResults()">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/>
+                                </svg>
+                                Export CSV
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- History Section -->
+            <section class="history-section">
+                <div class="glass-card">
+                    <div class="card-header">
+                        <h2>History</h2>
+                        <button class="btn btn-ghost btn-sm" onclick="clearHistory()">Clear</button>
+                    </div>
+                    <div class="history-list" id="history-list">
+                        <p class="empty-state">No analysis history yet. Start analyzing to see results here.</p>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Footer -->
+        <footer class="app-footer">
+            <p>Sentiment Analysis Platform v2.0 • Powered by VADER, TextBlob & Transformers</p>
+        </footer>
+    </div>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>
