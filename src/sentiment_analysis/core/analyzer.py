@@ -46,7 +46,7 @@ class SentimentAnalyzer:
 
     def __init__(
         self,
-        model: str = "llm",
+        model: str = "unified",
         *,
         preprocess: bool = True,
         **preprocessor_kwargs: object,

@@ -5,6 +5,7 @@ from sentiment_analysis.models.llm_model import LLMSentimentModel
 from sentiment_analysis.models.textblob_model import TextBlobModel
 from sentiment_analysis.models.transformer_model import TransformerModel
 from sentiment_analysis.models.vader_model import VaderModel
+from sentiment_analysis.models.unified_inference import UnifiedInferenceModel
 
 # Model registry — maps string names to model classes
 MODEL_REGISTRY: dict[str, type[SentimentModel]] = {
@@ -12,6 +13,7 @@ MODEL_REGISTRY: dict[str, type[SentimentModel]] = {
     "vader": VaderModel,
     "transformer": TransformerModel,
     "llm": LLMSentimentModel,
+    "unified": UnifiedInferenceModel,
 }
 
 
@@ -45,6 +47,7 @@ __all__ = [
     "SentimentModel",
     "TextBlobModel",
     "VaderModel",
+    "UnifiedInferenceModel",
     "get_model",
     "list_models",
 ]

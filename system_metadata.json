@@ -1,0 +1,24 @@
+{
+  "system_architecture": {
+    "os": "Windows",
+    "os_release": "11",
+    "os_version": "10.0.26200",
+    "architecture": "AMD64",
+    "cpu_cores_available": 24,
+    "gpu_hardware": "NVIDIA RTX 4050 (6GB VRAM)",
+    "python_version": "3.14.5"
+  },
+  "deployment_environment": {
+    "provider": "Render",
+    "tier": "Free",
+    "memory_limit_mb": 512,
+    "gpu_acceleration": false
+  },
+  "model_stack": {
+    "routing_engine": "synaptoroute v0.3.0",
+    "embedding_model": "FastEmbed",
+    "storage_backend": "SQLite3",
+    "sentiment_models": ["vader", "textblob"],
+    "unified_ml_model": "distilbert-base-uncased (Custom Fine-tuned)"
+  }
+}

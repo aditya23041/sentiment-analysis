@@ -31,6 +31,9 @@ class SentimentResult(BaseModel):
         default=0.0, description="Confidence score from 0.0 to 1.0"
     )
     model_used: str = Field(description="Name of the model that produced this result")
+    is_sarcastic: bool = Field(default=False, description="True if the text is deemed sarcastic")
+    sarcasm_probability: float = Field(default=0.0, description="Probability of sarcasm from 0.0 to 1.0")
+    metadata: dict = Field(default_factory=dict, description="Additional context such as emotions mapping")
     timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
     @staticmethod

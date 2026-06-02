@@ -5,6 +5,7 @@ __pycache__/
 
 # Virtual environments
 .venv/
+.venv_ml/
 venv/
 env/
 ENV/
@@ -42,3 +43,9 @@ Thumbs.db
 
 # Model cache
 models_cache/
+
+# Large Model Weights (Ignored for GitHub limits)
+*.pth
+*.zip
+# Allow chunked uploads
+!*.part*

@@ -9,6 +9,10 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 
 import click
+from dotenv import load_dotenv
+
+# Load environment variables from .env file for CLI usage
+load_dotenv()
 from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
@@ -46,7 +50,7 @@ def cli() -> None:
 
 @cli.command()
 @click.argument("text")
-@click.option("-m", "--model", default="vader", help="Model to use (vader, textblob, transformer)")
+@click.option("-m", "--model", default="unified", help="Model to use (unified, vader, textblob, transformer)")
 @click.option("--json-output", is_flag=True, help="Output as JSON")
 def analyze(text: str, model: str, json_output: bool) -> None:
     """Analyze sentiment of a single text."""
@@ -67,6 +71,14 @@ def analyze(text: str, model: str, json_output: bool) -> None:
         panel_content.append(f"  📊 Polarity:     {result.polarity:+.4f}\n")
         panel_content.append(f"  📐 Subjectivity: {result.subjectivity:.4f}\n")
         panel_content.append(f"  🎯 Confidence:   {result.confidence:.0%}\n")
+        
+        if result.is_sarcastic:
+            panel_content.append(f"  🤡 [bold magenta]Sarcasm Detected![/bold magenta] ({result.sarcasm_probability:.0%})\n")
+            
+        if "emotions" in result.metadata and result.metadata["emotions"]:
+            emotions_str = ", ".join([f"{k} ({v:.0%})" for k, v in result.metadata["emotions"].items()])
+            panel_content.append(f"  🎭 Emotions:     {emotions_str}\n")
+            
         panel_content.append(f"  🤖 Model:        {result.model_used}\n")
 
         console.print(Panel(
@@ -83,8 +95,8 @@ def analyze(text: str, model: str, json_output: bool) -> None:
 
 @cli.command()
 @click.option(
-    "-m", "--model", default="llm",
-    help="Model to use (vader, textblob, transformer, llm)",
+    "-m", "--model", default="unified",
+    help="Model to use (unified, vader, textblob, transformer, llm)",
 )
 def interactive(model: str) -> None:
     """Start an interactive session to analyze texts line by line."""
