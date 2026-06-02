@@ -58,8 +58,15 @@ async function analyzeText() {
         });
 
         if (!res.ok) {
-            const err = await res.json();
-            throw new Error(err.detail || 'Analysis failed');
+            let errMessage = 'Analysis failed';
+            try {
+                const err = await res.json();
+                errMessage = err.detail || errMessage;
+            } catch (parseErr) {
+                // If it's not JSON, read as text
+                errMessage = await res.text();
+            }
+            throw new Error(errMessage);
         }
 
         const result = await res.json();

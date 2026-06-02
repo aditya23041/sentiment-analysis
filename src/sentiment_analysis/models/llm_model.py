@@ -1,5 +1,5 @@
 import os
-import time
+from datetime import datetime, timezone
 from typing import Optional
 
 from openai import OpenAI
@@ -87,7 +87,7 @@ class LLMSentimentModel(SentimentModel):
                 sentiment=sentiment,
                 confidence=0.95,
                 model_used="llm_sarcasm",
-                timestamp=time.time()
+                timestamp=datetime.now(timezone.utc)
             )
             
         except Exception as e:
