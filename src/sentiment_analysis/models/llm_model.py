@@ -31,6 +31,10 @@ class LLMSentimentModel(SentimentModel):
             )
 
     @property
+    def name(self) -> str:
+        return "llm"
+
+    @property
     def is_available(self) -> bool:
         """Returns True if an API key was successfully found."""
         return self.client is not None
