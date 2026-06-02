@@ -59,9 +59,11 @@ async def analyze_text(request: AnalysisRequest) -> SentimentResult:
 
     Choose a model backend: 'textblob', 'vader', or 'transformer' (if installed).
     """
-    analyzer = _get_analyzer(request.model)
     try:
+        analyzer = _get_analyzer(request.model)
         return analyzer.analyze(request.text)
+    except ValueError as ve:
+        raise HTTPException(status_code=400, detail=str(ve)) from None
     except Exception as e:
         logger.exception("Analysis failed")
         raise HTTPException(status_code=500, detail=f"Analysis failed: {e!s}") from None
@@ -70,8 +72,8 @@ async def analyze_text(request: AnalysisRequest) -> SentimentResult:
 @router.post("/analyze/batch", response_model=AnalysisResponse)
 async def analyze_batch(request: BatchAnalysisRequest) -> AnalysisResponse:
     """Analyze sentiment for multiple texts in one request."""
-    analyzer = _get_analyzer(request.model)
     try:
+        analyzer = _get_analyzer(request.model)
         results = analyzer.analyze_batch(request.texts)
         return AnalysisResponse(
             results=results,
@@ -86,8 +88,8 @@ async def analyze_batch(request: BatchAnalysisRequest) -> AnalysisResponse:
 @router.post("/analyze/compare", response_model=CompareResponse)
 async def compare_models(request: CompareRequest) -> CompareResponse:
     """Compare results from all available models on the same text."""
-    analyzer = _get_analyzer("vader")  # Use any analyzer for comparison
     try:
+        analyzer = _get_analyzer("vader")  # Use any analyzer for comparison
         return analyzer.compare_models(request.text)
     except Exception as e:
         logger.exception("Comparison failed")
@@ -107,9 +109,8 @@ async def analyze_csv(
     if not file.filename or not file.filename.endswith(".csv"):
         raise HTTPException(status_code=400, detail="File must be a .csv file")
 
-    analyzer = _get_analyzer(model)
-
     try:
+        analyzer = _get_analyzer(model)
         content = await file.read()
         df = analyzer.analyze_csv_content(content, text_column=text_column)
         records = df.to_dict(orient="records")

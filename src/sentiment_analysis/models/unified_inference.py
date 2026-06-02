@@ -22,7 +22,10 @@ class UnifiedInferenceModel(SentimentModel):
     Inference wrapper for the custom trained Unified Emotion & Sarcasm Model.
     Utilizes NetworkX memory graph for conversational context.
     """
-    def __init__(self, weights_dir: str = "src/sentiment_analysis/data/weights"):
+    def __init__(self, weights_dir: str = None):
+        if weights_dir is None:
+            # Default to the absolute path of data/weights
+            weights_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data", "weights")
         # LAZY LOAD HEAVY ML LIBRARIES TO PREVENT RENDER OOM ON STARTUP
         global torch, AutoTokenizer, UnifiedEmotionSarcasmModel
         import torch
