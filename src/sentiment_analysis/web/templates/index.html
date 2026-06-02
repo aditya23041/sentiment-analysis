@@ -47,7 +47,8 @@
                     <div class="model-selector">
                         <label for="model-select">Model</label>
                         <select id="model-select">
-                            <option value="vader" selected>VADER</option>
+                            <option value="unified" selected>Unified (Emotion & Sarcasm)</option>
+                            <option value="vader">VADER</option>
                             <option value="textblob">TextBlob</option>
                             <option value="transformer">Transformer (RoBERTa)</option>
                             <option value="llm">LLM (Sarcasm Aware)</option>
@@ -110,7 +111,10 @@
                 <div class="glass-card gauge-card">
                     <div class="card-header">
                         <h2>Sentiment Result</h2>
-                        <span class="badge" id="model-badge">VADER</span>
+                        <div style="display: flex; gap: 8px;">
+                            <span class="badge" id="sarcasm-badge" style="display: none; background: #eab308; color: #000;">Sarcasm Detected</span>
+                            <span class="badge" id="model-badge">Unified</span>
+                        </div>
                     </div>
                     <div class="gauge-container">
                         <div class="gauge-ring">
@@ -156,6 +160,11 @@
                                 <div class="metric-bar-fill confidence-bar" id="confidence-bar"></div>
                             </div>
                         </div>
+                    </div>
+                    
+                    <!-- GoEmotions Container -->
+                    <div class="metrics-row" id="emotions-container" style="display: none; justify-content: center; flex-wrap: wrap; gap: 8px; margin-top: 15px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 15px;">
+                        <!-- Filled by JS -->
                     </div>
                 </div>
             </section>

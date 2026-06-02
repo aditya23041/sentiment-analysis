@@ -101,6 +101,32 @@ function displayResult(result) {
 
     document.getElementById('model-badge').textContent = result.model_used.toUpperCase();
 
+    // Sarcasm Badge
+    const sarcasmBadge = document.getElementById('sarcasm-badge');
+    if (sarcasmBadge) {
+        sarcasmBadge.style.display = result.is_sarcastic ? 'inline-block' : 'none';
+    }
+
+    // Emotions Container
+    const emotionsContainer = document.getElementById('emotions-container');
+    if (emotionsContainer) {
+        emotionsContainer.innerHTML = '';
+        if (result.metadata && result.metadata.emotions && Object.keys(result.metadata.emotions).length > 0) {
+            emotionsContainer.style.display = 'flex';
+            for (const [emotion, score] of Object.entries(result.metadata.emotions)) {
+                const badge = document.createElement('span');
+                badge.className = 'badge';
+                badge.style.background = 'rgba(139, 92, 246, 0.2)';
+                badge.style.border = '1px solid #8b5cf6';
+                badge.style.color = '#c4b5fd';
+                badge.textContent = `${emotion.toUpperCase()} ${(score * 100).toFixed(0)}%`;
+                emotionsContainer.appendChild(badge);
+            }
+        } else {
+            emotionsContainer.style.display = 'none';
+        }
+    }
+
     // Metrics
     document.getElementById('metric-polarity').textContent = result.polarity.toFixed(4);
     document.getElementById('metric-subjectivity').textContent = result.subjectivity.toFixed(4);
