@@ -13,7 +13,7 @@ from sentiment_analysis.models.base import SentimentModel
 
 logger = logging.getLogger(__name__)
 
-_DEFAULT_MODEL = "distilbert-base-uncased-finetuned-sst-2-english"
+_DEFAULT_MODEL = "cardiffnlp/twitter-roberta-base-sentiment-latest"
 
 
 class TransformerModel(SentimentModel):
@@ -75,8 +75,14 @@ class TransformerModel(SentimentModel):
         label: str = result["label"]
         score: float = result["score"]
 
-        # Convert 2-class transformer output to polarity
-        polarity = score if label.upper() == "POSITIVE" else -score
+        # Convert 3-class transformer output (positive, neutral, negative) to polarity
+        label_upper = label.upper()
+        if "POS" in label_upper:
+            polarity = score
+        elif "NEG" in label_upper:
+            polarity = -score
+        else:
+            polarity = 0.0
 
         # Map to 5-class with the transformer's own confidence
         sentiment = SentimentResult.polarity_to_label(polarity)
@@ -107,7 +113,13 @@ class TransformerModel(SentimentModel):
             label = raw["label"]
             score = raw["score"]
 
-            polarity = score if label.upper() == "POSITIVE" else -score
+            label_upper = label.upper()
+            if "POS" in label_upper:
+                polarity = score
+            elif "NEG" in label_upper:
+                polarity = -score
+            else:
+                polarity = 0.0
 
             sentiment = SentimentResult.polarity_to_label(polarity)
 
