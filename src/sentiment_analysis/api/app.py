@@ -42,7 +42,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
 def create_app() -> FastAPI:
     """Create and configure the FastAPI application."""
     app = FastAPI(
-        title="Sentiment Analysis API",
+        title="Aditya's Sentiment Analyzer API",
         description=(
             "Multi-model sentiment analysis platform with "
             "TextBlob, VADER, and Transformer backends."
