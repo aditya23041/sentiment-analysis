@@ -3,12 +3,14 @@ FROM python:3.12-slim AS builder
 
 WORKDIR /app
 
+COPY requirements.txt .
 COPY pyproject.toml .
 COPY README.md .
 COPY src/ src/
 
 RUN pip install --no-cache-dir --upgrade pip && \
-    pip install --no-cache-dir .
+    pip install --no-cache-dir -r requirements.txt && \
+    pip install --no-cache-dir --no-deps .
 
 # Download NLTK data at build time
 RUN python -c "import nltk; nltk.download('vader_lexicon', quiet=True); nltk.download('punkt_tab', quiet=True); nltk.download('stopwords', quiet=True)"
