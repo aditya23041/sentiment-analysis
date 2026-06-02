@@ -82,7 +82,7 @@ def analyze(text: str, model: str, json_output: bool) -> None:
 
 
 @cli.command()
-@click.option("-m", "--model", default="vader", help="Model to use (vader, textblob, transformer)")
+@click.option("-m", "--model", default="llm", help="Model to use (vader, textblob, transformer, llm)")
 def interactive(model: str) -> None:
     """Start an interactive session to analyze texts line by line."""
     console.print(Panel(

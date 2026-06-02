@@ -31,11 +31,11 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     """Application lifespan: pre-load models on startup."""
     logger.info("Starting Sentiment Analysis API...")
 
-    # Pre-load the default model (VADER) to warm up
+    # Pre-load the default model (LLM) to warm up
     from sentiment_analysis.models import get_model
 
-    get_model("vader")
-    logger.info("Default model (VADER) pre-loaded")
+    get_model("llm")
+    logger.info("Default model (LLM) pre-loaded")
 
     yield
 
