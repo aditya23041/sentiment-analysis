@@ -52,10 +52,12 @@ def get_model(name: str, **kwargs: object) -> SentimentModel:
     try:
         return MODEL_REGISTRY[name](**kwargs)
     except ImportError as e:
-        raise ValueError(
-            f"Model '{name}' requires additional dependencies. Error: {e!s}. "
-            "Please install them via pip (e.g., pip install torch transformers)."
-        ) from None
+        logger.warning(
+            f"Model '{name}' requires additional dependencies ({e!s}). "
+            "Falling back to LLMSentimentModel."
+        )
+        # Graceful fallback instead of crashing the UI
+        return MODEL_REGISTRY["llm"](**kwargs)
 
 
 def list_models() -> list[str]:
