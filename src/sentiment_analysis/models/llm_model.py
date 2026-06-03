@@ -51,7 +51,7 @@ class LLMSentimentModel(SentimentModel):
         self,
         api_key: str | None = None,
         base_url: str | None = None,
-        model_name: str = "llama3-8b-8192",
+        model_name: str = "llama-3.1-8b-instant",
     ) -> None:
         """Initialise the LLM client."""
         self.api_key = (
